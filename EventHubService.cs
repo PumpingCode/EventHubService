@@ -15,7 +15,8 @@ namespace Pumpingcode.Services
     {
         private const string sasKeyName = "{SAS Key Name}";
         private const string sasKeyValue = "{SAS Key Value}";
-        private const string baseAddress = "{Azure Event Hub base address}";
+        private const string eventHubName = "{Azure Event Hub name}";        
+        private const string eventHubBaseAddress = "{Azure Event Hub base address}";
         private HttpClient httpClient = new HttpClient();
 
         /// <summary>
@@ -25,7 +26,7 @@ namespace Pumpingcode.Services
         {
             TimeSpan fromEpochStart = DateTime.UtcNow - new DateTime(1970, 1, 1);
             string expiry = Convert.ToString((int)fromEpochStart.TotalSeconds + 86400); // 86400s = 24h
-            string stringToSign = WebUtility.UrlEncode(baseAddress) + "\n" + expiry;
+            string stringToSign = WebUtility.UrlEncode(eventHubBaseAddress) + "\n" + expiry;
 
             // Create hash
             MacAlgorithmProvider provider = MacAlgorithmProvider.OpenAlgorithm(MacAlgorithmNames.HmacSha256);
@@ -35,7 +36,7 @@ namespace Pumpingcode.Services
             // Generate token
             var signature = CryptographicBuffer.EncodeToBase64String(hash.GetValueAndReset());
             string token = String.Format(CultureInfo.InvariantCulture, "SharedAccessSignature sr={0}&sig={1}&se={2}&skn={3}",
-                            WebUtility.UrlEncode(baseAddress), WebUtility.UrlEncode(signature), expiry, sasKeyName);
+                            WebUtility.UrlEncode(eventHubBaseAddress), WebUtility.UrlEncode(signature), expiry, sasKeyName);
 
             // Set HTTP Access token
             httpClient.DefaultRequestHeaders.Clear();
@@ -53,7 +54,7 @@ namespace Pumpingcode.Services
             var content = new StringContent(json);
 
             // Send event
-            var response = await httpClient.PostAsync(baseAddress + "/dachautemp/messages", content);
+            var response = await httpClient.PostAsync($"{eventHubBaseAddress}/{eventHubName}/messages", content);
             if (response.StatusCode == HttpStatusCode.Unauthorized)
             {
                 // Maybe token expired available. Renew and try again
@@ -61,7 +62,7 @@ namespace Pumpingcode.Services
 
                 // Try again
                 content = new StringContent(json);
-                response = await httpClient.PostAsync(baseAddress + "/dachautemp/messages", content);
+                response = await httpClient.PostAsync($"{eventHubBaseAddress}/{eventHubName}/messages", content);
             }
 
             // Check if everything went fine
