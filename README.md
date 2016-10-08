@@ -9,4 +9,4 @@ Besides, we need the base address of the Event Hub, that we can find at the *Das
 ![GitHub Logo](http://pumpingco.de/wp-content/uploads/2016/10/Screen-Shot-2016-10-08-at-17.05.55.png)
 
 ## Details
-Read the details in the [article at the blog](http://pumpingco.de/manually-connect-with-azure-event-hub/).
+Read the details in the [article at the blog](http://pumpingco.de/manually-connect-and-send-data-to-an-azure-event-hub/).
